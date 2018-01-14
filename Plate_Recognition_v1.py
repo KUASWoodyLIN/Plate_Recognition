@@ -1,9 +1,11 @@
 import os
-
+import sys
+path = os.path.dirname(os.path.abspath(__file__))
+up_path, _ = os.path.split(path)
+sys.path.append(up_path)
 import numpy as np
 from IPython.display import Image
 
-from Plate_Recognition.common.read_xml import read_location
 from Plate_Recognition.common.read_dirfile import read_dirfile_name, license_plate
 
 from Plate_Recognition.common.generator import train_generator, valid_generator, characters
@@ -125,7 +127,8 @@ callbacks = [
 model.fit_generator(generator=train_generator(train_data, batch_size),
                     steps_per_epoch=312,
                     epochs=epochs,
+                    verbose=1,
                     callbacks=callbacks,
-                    validation_data=valid_generator(ALL_FILES, batch_size),
+                    validation_data=valid_generator(valid_data, batch_size),
                     validation_steps=int(np.ceil(len(valid_data)/64))
                     )
