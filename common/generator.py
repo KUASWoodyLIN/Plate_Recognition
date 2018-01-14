@@ -47,7 +47,7 @@ def train_generator(train_data, batch_size=64):
                 'label_length': label_length,
                 'source_str': source_str  # used for visualization only
                 }
-      outputs = {'ctc': np.zeros([batch_size])}  # dummy data for dummy loss function
+      outputs = {'ctc': np.zeros([size])}  # dummy data for dummy loss function
       yield inputs, outputs
 
 
@@ -85,7 +85,7 @@ def valid_generator(valid_data, batch_size=64):
                 'label_length': label_length,
                 'source_str': source_str  # used for visualization only
                 }
-      outputs = {'ctc': np.zeros([batch_size])}  # dummy data for dummy loss function
+      outputs = {'ctc': np.zeros([size])}  # dummy data for dummy loss function
       yield inputs, outputs
 
 
