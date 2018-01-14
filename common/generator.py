@@ -1,5 +1,6 @@
 import string
 
+from Plate_Recognition.common.characters import *
 from Plate_Recognition.common.read_dirfile import read_dirfile_name, license_plate, license_plate_single
 from Plate_Recognition.common.read_xml import read_location
 
@@ -8,10 +9,6 @@ import numpy as np
 from keras.utils.np_utils import to_categorical
 
 
-ALL_LABELS = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9'.split()
-characters = string.digits + string.ascii_uppercase
-id2name = {i: name for i, name in enumerate(characters)}
-name2id = {name: i for i, name in id2name.items()}
 width, height, n_class = 320, 240, len(characters)
 absolute_max_string_len = 7
 
@@ -51,7 +48,7 @@ def train_generator(train_data, batch_size=64):
                 'source_str': source_str  # used for visualization only
                 }
       outputs = {'ctc': np.zeros([batch_size])}  # dummy data for dummy loss function
-    yield inputs, outputs
+      yield inputs, outputs
 
 
 def valid_generator(valid_data, batch_size=64):
@@ -89,7 +86,7 @@ def valid_generator(valid_data, batch_size=64):
                 'source_str': source_str  # used for visualization only
                 }
       outputs = {'ctc': np.zeros([batch_size])}  # dummy data for dummy loss function
-    yield inputs, outputs
+      yield inputs, outputs
 
 
 def train_generator_old(train_data, batch_size=64):
@@ -137,8 +134,7 @@ def valid_generator_old(valid_data, batch_size=64):
 if __name__ == '__main__':
   DATA_DIR = '/home/woodylin/tensorflow3/Plate_Recognition/data/train/'
   ALL_FILES = read_dirfile_name(DATA_DIR)
-  for x_batch, y_batch, size_batch in gen(ALL_FILES):
-    print('x_batch', x_batch)
-    print('y_batch', y_batch)
-    print('size_batch', size_batch)
+  for inputs, outputs in train_generator(ALL_FILES):
+    print('inputs', inputs)
+    print('outputs', outputs)
     print('Exit')

@@ -4,12 +4,10 @@ path = os.path.dirname(os.path.abspath(__file__))
 up_path, _ = os.path.split(path)
 sys.path.append(up_path)
 import numpy as np
-from IPython.display import Image
 
+from Plate_Recognition.common.characters import *
 from Plate_Recognition.common.read_dirfile import read_dirfile_name, license_plate
-
-from Plate_Recognition.common.generator import train_generator, valid_generator, characters
-
+from Plate_Recognition.common.generator import train_generator, valid_generator
 from sklearn.cross_validation import train_test_split
 
 from keras import backend as K
@@ -27,10 +25,6 @@ from keras.callbacks import *
 DATA_DIR = os.path.join(os.getcwd() + '/data/train/')
 ALL_FILES = read_dirfile_name(DATA_DIR)
 train_data, valid_data = train_test_split(ALL_FILES, test_size=0.1)
-
-# ALL_LABELS = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9'.split()
-# id2name = {i: name for i, name in enumerate(ALL_LABELS)}
-# name2id = {name: i for i, name in id2name.items()}
 
 # image size
 width, height = 320, 240
@@ -125,7 +119,7 @@ callbacks = [
 ]
 
 model.fit_generator(generator=train_generator(train_data, batch_size),
-                    steps_per_epoch=312,
+                    steps_per_epoch=int(np.ceil(len(train_data)/64)),
                     epochs=epochs,
                     verbose=1,
                     callbacks=callbacks,
