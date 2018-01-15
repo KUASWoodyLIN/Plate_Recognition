@@ -34,7 +34,7 @@ def train_generator(train_data, batch_size=64):
 
       for i, file in enumerate(i_train_batch):
         X_data[i] = np.array(cv2.imread(file+'.jpg'), dtype=np.float32).transpose(1, 0, 2) / 255
-        input_length[i] = width // 2**3 - 2
+        input_length[i] = 36 - 2   # width // 2**3 - 2
         license_plate = license_plate_single(file)
         label_length[i] = len(license_plate)
         source_str.append(license_plate)
@@ -134,7 +134,11 @@ def valid_generator_old(valid_data, batch_size=64):
 if __name__ == '__main__':
   DATA_DIR = '/home/woodylin/tensorflow3/Plate_Recognition/data/train/'
   ALL_FILES = read_dirfile_name(DATA_DIR)
-  for inputs, outputs in train_generator(ALL_FILES):
-    print('inputs', inputs)
-    print('outputs', outputs)
-    print('Exit')
+  # for inputs, outputs in train_generator(ALL_FILES):
+  #   print('inputs', inputs)
+  #   print('outputs', outputs)
+  #   print('Exit')
+
+  generator = valid_generator(ALL_FILES)
+  inputs, outputs = next(generator)
+  print('Exit')

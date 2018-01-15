@@ -57,14 +57,14 @@ x = Reshape(target_shape=(int(conv_shape[1]), int(conv_shape[2]*conv_shape[3])))
 x = Dense(32, activation='relu')(x)
 gru_1 = GRU(rnn_size, return_sequences=True, kernel_initializer='he_normal', name='gru1')(x)
 gru_1b = GRU(rnn_size, return_sequences=True, go_backwards=True,
-             init='he_normal', name='gru1_b')(x)
+             kernel_initializer='he_normal', name='gru1_b')(x)
 gru1_merged = add([gru_1, gru_1b])
-gru_2 = GRU(rnn_size, return_sequences=True, init='he_normal', name='gru2')(gru1_merged)
+gru_2 = GRU(rnn_size, return_sequences=True, kernel_initializer='he_normal', name='gru2')(gru1_merged)
 gru_2b = GRU(rnn_size, return_sequences=True, go_backwards=True,
              kernel_initializer='he_normal', name='gru2_b')(gru1_merged)
 x = concatenate([gru_2, gru_2b])
 x = Dropout(0.25)(x)
-x = Dense(len(characters)+1, init='he_normal', activation='softmax')(x)
+x = Dense(len(characters)+1, kernel_initializer='he_normal', activation='softmax')(x)
 base_model = Model(input=input_data, output=x)
 
 labels = Input(name='the_labels', shape=[7], dtype='float32')
