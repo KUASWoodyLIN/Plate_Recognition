@@ -1,5 +1,6 @@
 logs/
 data/
+image_ocr/
 __pycache__/
 fail_data/
 

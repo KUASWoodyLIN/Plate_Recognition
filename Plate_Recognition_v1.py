@@ -36,6 +36,10 @@ OUTPUT_DIR = 'image_ocr'
 # image size
 width, height = 320, 240
 
+start_epoch = 0
+stop_epoch = 200
+batch_size = 64
+
 # Network parameters
 conv_filters = 16
 kernel_size = (3, 3)
@@ -146,14 +150,13 @@ gru_2b = GRU(rnn_size, return_sequences=True, go_backwards=True, kernel_initiali
 inner = Dense(len(characters)+1, kernel_initializer='he_normal',
                   name='dense2')(concatenate([gru_2, gru_2b]))
 y_pred = Activation('softmax', name='softmax')(inner)
-
 Model(inputs=input_data, outputs=y_pred).summary()
+
 labels = Input(name='the_labels', shape=[7], dtype='float32')
 input_length = Input(name='input_length', shape=[1], dtype='int64')
 label_length = Input(name='label_length', shape=[1], dtype='int64')
 # Keras doesn't currently support loss funcs with extra parameters
 # so CTC loss is implemented in a lambda layer
-
 loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
 
 # clipnorm seems to speeds up convergence
@@ -163,9 +166,9 @@ model = Model(inputs=[input_data, labels, input_length, label_length], outputs=l
 
 # the loss calc occurs elsewhere, so use a dummy lambda func for the loss
 model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
-# if start_epoch > 0:
-#     weight_file = os.path.join(OUTPUT_DIR, os.path.join(run_name, 'weights%02d.h5' % (start_epoch - 1)))
-#     model.load_weights(weight_file)
+if start_epoch > 0:
+    weight_file = os.path.join(OUTPUT_DIR, os.path.join(run_name, 'weights%02d.h5' % (start_epoch - 1)))
+    model.load_weights(weight_file)
 
 
 # captures output of softmax so we can decode the output during visualization
@@ -174,9 +177,7 @@ test_func = K.function([input_data], [y_pred])
 # 反馈函数，即运行固定次数后，执行反馈函数可保存模型，并且可视化当前训练的效果
 viz_cb = VizCallback(run_name, test_func, valid_generator(valid_data))
 
-epochs = 50
-batch_size = 64
-file_name = str(epochs) + '_' + str(batch_size)
+file_name = str(stop_epoch) + '_' + str(batch_size)
 callbacks = [
   EarlyStopping(monitor='val_loss',
                 patience=5,
@@ -199,9 +200,10 @@ callbacks = [
 
 model.fit_generator(generator=train_generator(train_data, batch_size),
                     steps_per_epoch=int(np.ceil(len(train_data)/64)),
-                    epochs=epochs,
+                    epochs=stop_epoch,
                     verbose=1,
-                    callbacks=callbacks,
+                    callbacks=[EarlyStopping(patience=10), viz_cb],
                     validation_data=valid_generator(valid_data, batch_size),
-                    validation_steps=int(np.ceil(len(valid_data)/64))
+                    validation_steps=int(np.ceil(len(valid_data)/64)),
+                    initial_epoch=start_epoch
                     )
