@@ -11,6 +11,7 @@ from Plate_Recognition.common.generator import train_generator, valid_generator
 from sklearn.cross_validation import train_test_split
 
 from keras import backend as K
+from keras.layers.merge import add, concatenate
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers import Input, Dense, Activation, Reshape, Lambda, Dropout, merge
 from keras.layers.recurrent import GRU
@@ -46,22 +47,22 @@ def ctc_lambda_func(args):
 input_data = Input(name='the_input', shape=input_shape, dtype='float32')
 x = input_data
 for i in range(3):
-    x = Conv2D(32, 3, 3, activation='relu')(x)
-    x = Conv2D(32, 3, 3, activation='relu')(x)
-    x = MaxPooling2D(pool_size=(2, 2))(x)
+  x = Conv2D(32, (3, 3), activation='relu')(x)
+  x = Conv2D(32, (3, 3), activation='relu')(x)
+  x = MaxPooling2D(pool_size=(2, 2))(x)
 
 conv_shape = x.get_shape()
 x = Reshape(target_shape=(int(conv_shape[1]), int(conv_shape[2]*conv_shape[3])))(x)
 
 x = Dense(32, activation='relu')(x)
-gru_1 = GRU(rnn_size, return_sequences=True, init='he_normal', name='gru1')(x)
+gru_1 = GRU(rnn_size, return_sequences=True, kernel_initializer='he_normal', name='gru1')(x)
 gru_1b = GRU(rnn_size, return_sequences=True, go_backwards=True,
              init='he_normal', name='gru1_b')(x)
-gru1_merged = merge([gru_1, gru_1b], mode='sum')
+gru1_merged = add([gru_1, gru_1b])
 gru_2 = GRU(rnn_size, return_sequences=True, init='he_normal', name='gru2')(gru1_merged)
 gru_2b = GRU(rnn_size, return_sequences=True, go_backwards=True,
-             init='he_normal', name='gru2_b')(gru1_merged)
-x = merge([gru_2, gru_2b], mode='concat')
+             kernel_initializer='he_normal', name='gru2_b')(gru1_merged)
+x = concatenate([gru_2, gru_2b])
 x = Dropout(0.25)(x)
 x = Dense(len(characters)+1, init='he_normal', activation='softmax')(x)
 base_model = Model(input=input_data, output=x)
@@ -72,7 +73,7 @@ label_length = Input(name='label_length', shape=[1], dtype='int64')
 loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')([x, labels, input_length, label_length])
 
 
-model = Model(input=[input_data, labels, input_length, label_length], output=[loss_out])
+model = Model(input=[input_data, labels, input_length, label_length], output=loss_out)
 model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer='adadelta')
 
 

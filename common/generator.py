@@ -72,7 +72,7 @@ def valid_generator(valid_data, batch_size=64):
 
       for i, file in enumerate(i_valid_batch):
         X_data[i] = np.array(cv2.imread(file+'.jpg'), dtype=np.float32).transpose(1, 0, 2) / 255
-        input_length[i] = width // 2**2 - 2
+        input_length[i] = width // 2**3 - 2
         license_plate = license_plate_single(file)
         label_length[i] = len(license_plate)
         source_str.append(license_plate)
