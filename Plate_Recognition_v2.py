@@ -109,11 +109,21 @@ evaluator = Evaluate()
 
 
 file_name = str(epoch) + '_' + str(batch_size)
+callbacks = [
+  EarlyStopping(monitor='val_loss',
+                patience=5,
+                verbose=1,
+                min_delta=0.01,
+                mode='min'),
+  TensorBoard(log_dir='logs/' + file_name),
+  evaluator
+]
+
 model.fit_generator(generator=train_generator(train_data, batch_size),
-                    steps_per_epoch=5,#int(np.ceil(len(train_data)/64)),
+                    steps_per_epoch=int(np.ceil(len(train_data)/64)),
                     epochs=epoch,
                     verbose=1,
-                    callbacks=[EarlyStopping(patience=10), TensorBoard(log_dir='logs/' + file_name), evaluator],
+                    callbacks=callbacks,
                     validation_data=valid_generator(valid_data, batch_size),
                     validation_steps=int(np.ceil(len(valid_data)/64)),
                     )
